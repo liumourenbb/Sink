@@ -28,6 +28,7 @@ const deployEnvSchema = z.object({
   // Optional Wrangler preview bucket; falls back to DEPLOY_R2_BUCKET_NAME when R2 is enabled
   DEPLOY_R2_PREVIEW_BUCKET_NAME: optionalName,
   DEPLOY_ANALYTICS_DATASET: optionalName,
+  DEPLOY_CUSTOM_DOMAIN: optionalName,
 })
 
 async function loadEnv() {
@@ -90,6 +91,16 @@ if (env.DEPLOY_R2_BUCKET_NAME) {
 }
 else {
   config.r2_buckets = config.r2_buckets.filter(({ binding }) => binding !== 'R2')
+}
+
+if (env.DEPLOY_CUSTOM_DOMAIN) {
+  config.workers_dev = true
+  config.routes = [
+    {
+      pattern: env.DEPLOY_CUSTOM_DOMAIN,
+      custom_domain: true,
+    },
+  ]
 }
 
 await writeFile(outputPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8')
